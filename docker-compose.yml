@@ -1,18 +1,19 @@
 version: "2.4"
 services:
   # Provides an easy way to ensure slow-starting databases are ready when the tests run
-  block-until-healthy:
-    image: alpine:latest
-    depends_on:
-      cubrid:
-        condition: service_healthy
-      db2:
-        condition: service_healthy
-      sqlserver:
-        condition: service_healthy
+  #  block-until-healthy:
+  #    image: alpine:latest
+  #    depends_on:
+  #      cubrid:
+  #        condition: service_healthy
+  #      db2:
+  #        condition: service_healthy
+  #      sqlserver:
+  #        condition: service_healthy
 
   mysql:
     image: mysql:5.6.38
+    platform: linux/amd64
     ports:
       - "3306:3306"
     environment:
@@ -23,6 +24,7 @@ services:
 
   postgresql:
     image: postgis/postgis:16-3.4-alpine
+    platform: linux/amd64
     ports:
       - "5432:5432"
     environment:
@@ -32,6 +34,7 @@ services:
 
   oracle:
     image: gvenzl/oracle-xe:slim-faststart
+    platform: linux/amd64
     ports:
       - "1521:1521"
     environment:
@@ -39,9 +42,18 @@ services:
       - APP_USER=querydsl
       - APP_USER_PASSWORD=querydsl
       - TZ=UTC
+    volumes:
+      - ./oracle-data:/opt/oracle/oradata
+    healthcheck:
+      test: [ "CMD-SHELL", "echo 'SELECT 1 FROM DUAL;' | sqlplus sys/YourPassword@//localhost:1521/XE AS SYSDBA" ]
+      interval: 1m
+      timeout: 30s
+      retries: 3
+      start_period: 1m
 
   cubrid:
     image: cubrid/cubrid:11.3
+    platform: linux/amd64
     ports:
       - "33000:33000"
       - "30000:30000"
@@ -50,19 +62,21 @@ services:
       - "1523:1523"
     environment:
       - CUBRID_DB=demodb
-    healthcheck:
-      test: csql demodb -c "SELECT 1"
-      interval: 5s
-      timeout: 60s
-      start_period: 60s
+  #    healthcheck:
+  #      test: csql demodb -c "SELECT 1"
+  #      interval: 5s
+  #      timeout: 60s
+  #      start_period: 60s
 
   mongo:
     image: mongo:4
+    platform: linux/amd64
     ports:
       - "27017:27017"
 
   db2:
     image: ibmcom/db2:11.5.0.0
+    platform: linux/amd64
     privileged: true
     ports:
       - "50000:50000"
@@ -73,28 +87,30 @@ services:
       - LICENSE=accept
       - ARCHIVE_LOGS=false
       - AUTOCONFIG=false
-    healthcheck:
-      test: /opt/ibm/db2/V11.5/bin/db2 CONNECT TO $$DBNAME
-      interval: 5s
-      timeout: 240s
-      start_period: 240s
+  #    healthcheck:
+  #      test: /opt/ibm/db2/V11.5/bin/db2 CONNECT TO $$DBNAME
+  #      interval: 5s
+  #      timeout: 240s
+  #      start_period: 240s
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
+    platform: linux/amd64
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=Password1!
       - MSSQL_PID=Express
     ports:
       - "1433:1433"
-    healthcheck:
-      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$$SA_PASSWORD" -Q "SELECT 1" || exit 1
-      interval: 5s
-      timeout: 60s
-      start_period: 60s
+  #    healthcheck:
+  #      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$$SA_PASSWORD" -Q "SELECT 1" || exit 1
+  #      interval: 5s
+  #      timeout: 60s
+  #      start_period: 60s
 
   firebird:
     image: jacobalberty/firebird:v4
+    platform: linux/amd64
     ports:
       - "3050:3050"
     environment:
