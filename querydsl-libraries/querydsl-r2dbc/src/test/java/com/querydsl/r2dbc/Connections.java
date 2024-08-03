@@ -78,6 +78,7 @@ public final class Connections {
   }
 
   public static Connection getConnection() {
+    System.out.println("DB >>>>>>>>>>>> " + connHolder.get());
     return connHolder.get();
   }
 
@@ -191,6 +192,7 @@ public final class Connections {
   }
 
   public static void initH2() {
+    System.out.println("DB test >>>>>>>>>>>>>>>>>> ");
     targetHolder.set(Target.H2);
     SQLTemplates templates = new H2Templates();
     R2DBCConnectionProvider c = getH2();

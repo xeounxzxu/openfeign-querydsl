@@ -12,6 +12,12 @@
   <name>Querydsl - Core module</name>
   <description>core module for querydsl</description>
 
+  <properties>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.release>21</maven.compiler.release>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.jetbrains</groupId>

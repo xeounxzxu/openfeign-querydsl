@@ -12,6 +12,7 @@ services:
         condition: service_healthy
 
   mysql:
+    platform: linux/amd64
     image: mysql:5.6.38
     ports:
       - "3306:3306"
@@ -22,6 +23,7 @@ services:
       - MYSQL_DATABASE=querydsl
 
   postgresql:
+    platform: linux/amd64
     image: postgis/postgis:16-3.4-alpine
     ports:
       - "5432:5432"
@@ -31,6 +33,7 @@ services:
       - POSTGRES_DB=querydsl
 
   oracle:
+    platform: linux/amd64
     image: gvenzl/oracle-xe:slim-faststart
     ports:
       - "1521:1521"
@@ -41,6 +44,7 @@ services:
       - TZ=UTC
 
   cubrid:
+    platform: linux/amd64
     image: cubrid/cubrid:11.3
     ports:
       - "33000:33000"
@@ -50,18 +54,20 @@ services:
       - "1523:1523"
     environment:
       - CUBRID_DB=demodb
-    healthcheck:
-      test: csql demodb -c "SELECT 1"
-      interval: 5s
-      timeout: 60s
-      start_period: 60s
+#    healthcheck:
+#      test: csql demodb -c "SELECT 1"
+#      interval: 5s
+#      timeout: 60s
+#      start_period: 60s
 
   mongo:
+    platform: linux/amd64
     image: mongo:4
     ports:
       - "27017:27017"
 
   db2:
+    platform: linux/amd64
     image: ibmcom/db2:11.5.0.0
     privileged: true
     ports:
@@ -73,13 +79,14 @@ services:
       - LICENSE=accept
       - ARCHIVE_LOGS=false
       - AUTOCONFIG=false
-    healthcheck:
-      test: /opt/ibm/db2/V11.5/bin/db2 CONNECT TO $$DBNAME
-      interval: 5s
-      timeout: 240s
-      start_period: 240s
+#    healthcheck:
+#      test: /opt/ibm/db2/V11.5/bin/db2 CONNECT TO $$DBNAME
+#      interval: 5s
+#      timeout: 240s
+#      start_period: 240s
 
   sqlserver:
+    platform: linux/amd64
     image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
     environment:
       - ACCEPT_EULA=Y
@@ -94,6 +101,7 @@ services:
       start_period: 60s
 
   firebird:
+    platform: linux/amd64
     image: jacobalberty/firebird:v4
     ports:
       - "3050:3050"

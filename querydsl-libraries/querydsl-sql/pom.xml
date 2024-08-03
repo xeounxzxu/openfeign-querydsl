@@ -14,6 +14,9 @@
 
   <properties>
     <argLine>-Xms256m -Xmx512m -Duser.timezone=UTC</argLine>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.release>21</maven.compiler.release>
   </properties>
 
   <dependencies>

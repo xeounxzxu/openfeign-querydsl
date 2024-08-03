@@ -2327,6 +2327,13 @@ public abstract class SelectBase extends AbstractBaseTest {
   @Test
   @ExcludeIn({DERBY, SQLITE})
   public void string_left_Right() {
+    var test =
+        query()
+            .from(employee)
+            .where(employee.lastname.eq("Johnson"))
+            .select(R2DBCExpressions.right(R2DBCExpressions.left(employee.lastname, 4), 2))
+            .fetchFirst()
+            .block();
     assertEquals(
         "hn",
         query()

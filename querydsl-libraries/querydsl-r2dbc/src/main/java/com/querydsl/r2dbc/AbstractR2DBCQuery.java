@@ -18,11 +18,7 @@ import com.querydsl.core.QueryException;
 import com.querydsl.core.QueryFlag;
 import com.querydsl.core.QueryMetadata;
 import com.querydsl.core.support.QueryMixin;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.FactoryExpression;
-import com.querydsl.core.types.ParamExpression;
-import com.querydsl.core.types.ParamNotSetException;
-import com.querydsl.core.types.Path;
+import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.SimpleExpression;
 import com.querydsl.core.types.dsl.Wildcard;
@@ -30,16 +26,8 @@ import com.querydsl.r2dbc.binding.BindMarkers;
 import com.querydsl.r2dbc.binding.BindTarget;
 import com.querydsl.r2dbc.binding.StatementWrapper;
 import com.querydsl.sql.StatementOptions;
-import io.r2dbc.spi.ColumnMetadata;
-import io.r2dbc.spi.Connection;
-import io.r2dbc.spi.Row;
-import io.r2dbc.spi.RowMetadata;
-import io.r2dbc.spi.Statement;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import io.r2dbc.spi.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -209,35 +197,74 @@ public abstract class AbstractR2DBCQuery<T, Q extends AbstractR2DBCQuery<T, Q>>
     return configuration;
   }
 
+  //  @SuppressWarnings("unchecked")
+  //  @Override
+  //  public Flux<T> fetch() {
+  //    return Flux.usingWhen(
+  //            getConnection(),
+  //            conn -> {
+  //              System.out.println("Connection Debug Success: " + conn);
+  //              Expression<T> expr = (Expression<T>) queryMixin.getMetadata().getProjection();
+  //              SQLSerializer serializer = serialize(false);
+  //              Mapper<T> mapper = createMapper(expr);
+  //
+  //              List<Object> constants = serializer.getConstants();
+  //              String originalSql = serializer.toString();
+  //              String sql =
+  //                      R2dbcUtils.replaceBindingArguments(
+  //                              configuration.getBindMarkerFactory().create(), constants,
+  // originalSql);
+  //
+  //              Statement statement = conn.createStatement(sql);
+  //              BindTarget bindTarget = new StatementWrapper(statement);
+  //
+  //              setParameters(
+  //                      bindTarget,
+  //                      configuration.getBindMarkerFactory().create(),
+  //                      constants,
+  //                      serializer.getConstantPaths(),
+  //                      getMetadata().getParams());
+  //
+  //              return Flux.from(statement.execute()).flatMap(result -> result.map(mapper::map));
+  //            },
+  //            conn -> {
+  //              System.out.println("Connection Debug Closed: " + conn);
+  //              return Mono.from(conn.close());
+  //            }
+  ////            Connection::close
+  //    );
+  //  }
+
   @SuppressWarnings("unchecked")
   @Override
   public Flux<T> fetch() {
-    return Flux.usingWhen(
-        getConnection(),
-        conn -> {
-          Expression<T> expr = (Expression<T>) queryMixin.getMetadata().getProjection();
-          SQLSerializer serializer = serialize(false);
-          Mapper<T> mapper = createMapper(expr);
+    return getConnection()
+        .flatMapMany(
+            conn -> {
+              System.out.println("Connection Debug Success: " + conn);
 
-          List<Object> constants = serializer.getConstants();
-          String originalSql = serializer.toString();
-          String sql =
-              R2dbcUtils.replaceBindingArguments(
-                  configuration.getBindMarkerFactory().create(), constants, originalSql);
+              Expression<T> expr = (Expression<T>) queryMixin.getMetadata().getProjection();
+              SQLSerializer serializer = serialize(false);
+              Mapper<T> mapper = createMapper(expr);
 
-          Statement statement = conn.createStatement(sql);
-          BindTarget bindTarget = new StatementWrapper(statement);
+              List<Object> constants = serializer.getConstants();
+              String originalSql = serializer.toString();
+              String sql =
+                  R2dbcUtils.replaceBindingArguments(
+                      configuration.getBindMarkerFactory().create(), constants, originalSql);
 
-          setParameters(
-              bindTarget,
-              configuration.getBindMarkerFactory().create(),
-              constants,
-              serializer.getConstantPaths(),
-              getMetadata().getParams());
+              Statement statement = conn.createStatement(sql);
+              BindTarget bindTarget = new StatementWrapper(statement);
 
-          return Flux.from(statement.execute()).flatMap(result -> result.map(mapper::map));
-        },
-        Connection::close);
+              setParameters(
+                  bindTarget,
+                  configuration.getBindMarkerFactory().create(),
+                  constants,
+                  serializer.getConstantPaths(),
+                  getMetadata().getParams());
+
+              return Flux.from(statement.execute()).flatMap(result -> result.map(mapper::map));
+            });
   }
 
   private Mapper<T> createMapper(Expression<T> expr) {
